@@ -139,7 +139,11 @@ def workflow(config_path, experiment_name="workflow", uri_folder="mlruns"):
         qlib.init(**config.get("qlib_init"))
     else:
         exp_manager = C["exp_manager"]
-        # exp_manager["kwargs"]["uri"] = "file:" + str(Path(os.getcwd()).resolve() / uri_folder)
+        alias = config.get("alias")
+        if alias is None:
+            alias = os.path.basename(config_path).replace(".yaml", "")
+        exp_manager["kwargs"]["alias"] = alias
+        #exp_manager["kwargs"]["uri"] = "file:" + str(Path(os.getcwd()).resolve() / uri_folder)
         qlib.init(**config.get("qlib_init"), exp_manager=exp_manager)
 
     if "experiment_name" in config:

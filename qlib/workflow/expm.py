@@ -34,11 +34,12 @@ class ExpManager:
 
     active_experiment: Optional[Experiment]
 
-    def __init__(self, uri: Text, default_exp_name: Optional[Text]):
+    def __init__(self, uri: Text, default_exp_name: Optional[Text], alias: Optional[Text] = None):
         self.default_uri = uri
         self._active_exp_uri = None  # No active experiments. So it is set to None
         self._default_exp_name = default_exp_name
         self.active_experiment = None  # only one experiment can be active each time
+        self._alias = alias
         logger.debug(f"experiment manager uri is at {self.uri}")
 
     def __repr__(self):
@@ -361,7 +362,7 @@ class MLflowExpManager(ExpManager):
                 raise ExpAlreadyExistError() from e
             raise e
 
-        return MLflowExperiment(experiment_id, experiment_name, self.uri)
+        return MLflowExperiment(experiment_id, experiment_name, self.uri, self._alias)
 
     def _get_exp(self, experiment_id=None, experiment_name=None):
         """
@@ -378,7 +379,7 @@ class MLflowExpManager(ExpManager):
                 exp = self.client.get_experiment(experiment_id)
                 if exp.lifecycle_stage.upper() == "DELETED":
                     raise MlflowException("No valid experiment has been found.")
-                experiment = MLflowExperiment(exp.experiment_id, exp.name, self.uri)
+                experiment = MLflowExperiment(exp.experiment_id, exp.name, self.uri, self._alias)
                 return experiment
             except MlflowException as e:
                 raise ValueError(
@@ -389,7 +390,7 @@ class MLflowExpManager(ExpManager):
                 exp = self.client.get_experiment_by_name(experiment_name)
                 if exp is None or exp.lifecycle_stage.upper() == "DELETED":
                     raise MlflowException("No valid experiment has been found.")
-                experiment = MLflowExperiment(exp.experiment_id, experiment_name, self.uri)
+                experiment = MLflowExperiment(exp.experiment_id, experiment_name, self.uri, self._alias)
                 return experiment
             except MlflowException as e:
                 raise ValueError(
@@ -429,6 +430,6 @@ class MLflowExpManager(ExpManager):
             exps = self.client.list_experiments(view_type=ViewType.ACTIVE_ONLY)  # pylint: disable=E1101
         experiments = dict()
         for exp in exps:
-            experiment = MLflowExperiment(exp.experiment_id, exp.name, self.uri)
+            experiment = MLflowExperiment(exp.experiment_id, exp.name, self.uri, self._alias)
             experiments[exp.name] = experiment
         return experiments

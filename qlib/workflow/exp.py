@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Text, Optional
 from qlib.typehint import Literal
 import mlflow
 from mlflow.entities import ViewType
@@ -245,10 +245,10 @@ class MLflowExperiment(Experiment):
     Use mlflow to implement Experiment.
     """
 
-    def __init__(self, id, name, uri):
+    def __init__(self, id, name, uri, alias: Optional[Text] = None):
         super(MLflowExperiment, self).__init__(id, name)
+        self._default_rec_name = "mlflow_recorder" if alias is None else alias
         self._uri = uri
-        self._default_rec_name = "mlflow_recorder"
         self._client = mlflow.tracking.MlflowClient(tracking_uri=self._uri)
 
     def __repr__(self):
